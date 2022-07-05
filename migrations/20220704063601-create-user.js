@@ -20,6 +20,9 @@ module.exports = {
       token: {
         type: Sequelize.STRING
       },
+      // loginToken: {
+      //   type: Sequelize.STRING
+      // },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -28,7 +31,8 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    });
+    })
+    
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Users');

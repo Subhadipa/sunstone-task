@@ -13,12 +13,6 @@ let exportFuncs = {
     createUser: async (req, res) => {
         try {
             let { name, email, password } = req.body;
-          
-       
-           
-
-        
-
             saltRounds = 10;
             const hashedPassword = bcrypt.hashSync(password, saltRounds);//hased passasword
             let dataObject = {
@@ -51,8 +45,8 @@ let exportFuncs = {
                 message: "User created successfully!",
                 data: savedData
             })
-       // }
-       }
+            // }
+        }
         catch (error) {
             return res.status(500).send({
                 status: "false",
@@ -67,7 +61,7 @@ let exportFuncs = {
         try {
 
             let { email, password } = req.body;
-          
+
             saltRounds = 10;
 
             let userDetails = await loginUserModel.User.findOne({
@@ -84,20 +78,31 @@ let exportFuncs = {
                 });
 
             }
-         
-               
+            //creating token
+            const token = jwt.sign(
+                {
+                    email: userDetails.email,
+                    // exp:0.5 * 60 
+                },
+                "subha", //secret key
+                {
+                    expiresIn: 1.5 * 60
+                }
+            );
+           //adding new header to my response
+            //res.header('x-api-key', token);
 
             if (userDetails) {
                 const { name, password } = userDetails
-                
+
                 //verify passwords
-                const validPassword = await bcrypt.compare(req.body.password,password);
+                const validPassword = await bcrypt.compare(req.body.password, password);
 
                 if (validPassword) {
                     return res.status(200).send({
                         status: true,
                         message: name + " " + "logged in successfully!",
-                        //token:token
+                        token:token
                     });
                 } else {
                     return res.status(400).send({
@@ -129,7 +134,7 @@ let exportFuncs = {
     forgotPassword: async (req, res) => {
         try {
             let { email } = req.body;
-           
+
             //checking the email if it's exist or not
             let userDetails = await loginUserModel.User.findOne({
 
@@ -147,6 +152,7 @@ let exportFuncs = {
 
             }
             else {
+                if (req.validToken.email == userDetails.email) {
                 //creating token
                 const token = jwt.sign(
                     {
@@ -158,6 +164,7 @@ let exportFuncs = {
                         expiresIn: 0.5 * 60
                     }
                 );
+                
                 //updating token w.r.t email
                 const data = await loginUserModel.User.update({ token: token }, {
                     where: {
@@ -177,11 +184,16 @@ let exportFuncs = {
 
 
             }
-
+            else {
+                return res.status(401).send({ 
+                    status: false, 
+                    message: "Not Authorize" 
+                })
+            }
 
 
         }
-
+    }
         catch (error) {
             if (error.isJoi === true) {
                 return res.status(422).send({
@@ -203,7 +215,7 @@ let exportFuncs = {
     resetPassword: async (req, res) => {
         try {
             const token = req.query.token;
-           
+
             //Find out the generated token from db
             const tokenData = await loginUserModel.User.findOne({
 
@@ -216,7 +228,7 @@ let exportFuncs = {
             if (tokenData) {
                 const { password } = req.body;
 
-              
+
 
                 const resetPassword = password;
 
@@ -271,7 +283,7 @@ let exportFuncs = {
 
 
     },
-    
+
 }
 
 

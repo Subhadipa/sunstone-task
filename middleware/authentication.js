@@ -8,7 +8,7 @@ module.exports.tokenCheck = (req, res, next) => {
             let validToken = jwt.verify(token, 'subha')
             //console.log(validToken)
             if (validToken) {
-                req.validToken = validToken;//(key=value)
+                req.validToken = validToken;
                 next();
             }
             else {
